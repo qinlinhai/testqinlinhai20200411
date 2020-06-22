@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>会员列表</title>
+    <script src="js/vue.js"></script>
+    <script src="js/vue-router.js"></script>
+    <script src="js/index.js"></script>
+    <script src="js/axios.js"></script>
+    <link rel="stylesheet" href="css/index.css">
+    <style>
+        .demo-table-expand {
+            font-size: 0;
+        }
+        .demo-table-expand label {
+            width: 90px;
+            color: #99a9bf;
+        }
+        .demo-table-expand .el-form-item {
+            margin-right: 0;
+            margin-bottom: 0;
+            width: 50%;
+        }
+    </style>
+</head>
+<body>
+<div id="membersList">
+    <div>
+        <el-button type="success" @click="showDialog" plain>增加商品</el-button>
+        <el-dialog
+                title="提示"
+                :visible.sync="dialogVisible"
+                width="30%"
+                :before-close="handleClose">
+<!--            录入表单-->
+            <el-form :model="membersForm" :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm">
+                <el-form-item label="会员卡ID" prop="code">
+                    <el-input v-model="membersForm.code"></el-input>
+                </el-form-item>
+                <el-form-item label="会员名字" prop="fullname">
+                    <el-input v-model="membersForm.fullname"></el-input>
+                </el-form-item>
+                <el-form-item label="会员性别" prop="sex">
+                    <el-input v-model="membersForm.sex"></el-input>
+                </el-form-item>
+
+                <el-form-item label="会员电话" prop="phone">
+                    <el-input v-model="membersForm.phone"></el-input>
+                </el-form-item>
+                <el-form-item label="会员积分" prop="integrate">
+                    <el-input v-model="membersForm.integrate"></el-input>
+                </el-form-item>
+                <el-form-item label="会员身份证" prop="sfz">
+                    <el-input v-model="membersForm.sfz"></el-input>
+                </el-form-item>
+                <el-form-item label="会员生日" prop="birthday">
+                    <el-input v-model="membersForm.birthday"></el-input>
+                </el-form-item>
+
+
+<!--                <el-form-item label="会员等级" prop="vtype">-->
+<!--                    <el-select v-model="ruleForm.vtype" placeholder="请选择等级">-->
+<!--                        <el-option label="男" value="shanghai"></el-option>-->
+<!--                        <el-option label="女" value="beijing"></el-option>-->
+<!--                    </el-select>-->
+<!--                </el-form-item>-->
+
+                <el-form-item label="创建时间" required>
+                    <el-col :span="11">
+                        <el-form-item prop="createtime">
+                            <el-date-picker type="date" placeholder="选择日期" v-model="membersForm.createtime" style="width: 100%;"></el-date-picker>
+                        </el-form-item>
+                    </el-col>
+                    <el-col class="line" :span="2">-</el-col>
+                </el-form-item>
+
+
+                <el-form-item label="备注" prop="comment">
+                    <el-input v-model="membersForm.comment"></el-input>
+                </el-form-item>
+            </el-form>
+<!--录入表单结束-->
+
+            <span slot="footer" class="dialog-footer">
+    <el-button @click="resetForm('ruleForm')">取 消</el-button>
+    <el-button type="primary" @click="addGoods('ruleForm')">确 定</el-button>
+    </span>
+        </el-dialog>
+    </div>
+
+<!--    搜索框-->
+    <div style="margin-left: 850px">
+        <el-form :inline="true" ref="form" label-width="80px" size="mini" class="demo-form-inline">
+            <el-form-item label="名字">
+                <el-input v-model="search"></el-input>
+            </el-form-item>
+            <el-form-item >
+                <el-button type="primary" @click="onSearch">搜索</el-button>
+                <el-button>取消</el-button>
+            </el-form-item>
+        </el-form>
+    </div>
+    <template>
+        <el-table
+                :data="tableData"
+                style="width: 100%">
+            <el-table-column
+                    type="selection"
+                    width="55">
+            </el-table-column>
+
+            <el-table-column
+                    prop="code"
+                    label="会员卡ID">
+
+            </el-table-column>
+
+            <el-table-column
+                    prop="fullname"
+                    label="会员名字">
+
+            </el-table-column>
+            <el-table-column
+                    prop="vtype.vname"
+                    label="会员等级">
+            </el-table-column>
+            <el-table-column
+                    prop="sex"
+                    label="会员性别">
+            </el-table-column>
+
+            <el-table-column
+                    prop="phone"
+                    label="会员电话">
+            </el-table-column>
+
+            <el-table-column
+                    prop="integrate"
+                    label="会员积分">
+            </el-table-column>
+            <el-table-column
+                    prop="sfz"
+                    label="会员身份证号">
+            </el-table-column>
+
+            <el-table-column
+                    prop="birthday"
+                    label="会员生日">
+            </el-table-column>
+
+            <el-table-column
+                    prop="createtime"
+                    label="建立时间">
+
+            </el-table-column>
+            <el-table-column
+                    prop="comment"
+                    label="备注">
+            </el-table-column>
+
+
+            <el-table-column
+                    fixed="right"
+                    label="操作"
+                    width="300">
+                <template slot-scope="parentScope">
+                    <el-button  type="text" size="small" @click="deletemembers(parentScope.row)">删除</el-button>
+                    <el-button type="text" size="small" @click="updateGoods(parentScope.row)">编辑</el-button>
+                </template>
+            </el-table-column>
+        </el-table>
+        <el-pagination
+                @size-change="handleSizeChange"
+                @current-change="handleCurrentChange"
+                :current-page="currentpage"
+                :page-sizes="pagesizes"
+                :page-size="pagesize"
+                layout="total, sizes, prev, pager, next, jumper"
+                :total="total">
+        </el-pagination>
+    </template>
+</div>
+</body>
+<script>
+    const vm=new Vue({
+        el:"#membersList",
+        data:{
+            tableData:[],
+            total:0,
+            pagesize:5,
+            pagesizes:[5,10,15],
+            currentpage:1,
+            dialogVisible:false,
+            search: "",
+            membersForm:[],
+            rules: {
+                code: [
+                    { required: true, message: '请输入活动名称', trigger: 'blur' },
+
+                ],
+                fullname: [
+                    { required: true, message: '请选择活动区域', trigger: 'change' }
+                ],
+                createtime: [
+                    { type: 'date', required: true, message: '请选择日期', trigger: 'change' }
+                ],
+                sex: [
+                    { required: true, message: '请输入活动名称', trigger: 'blur' },
+
+                ],
+                phone: [
+                    { required: true, message: '请输入活动名称', trigger: 'blur' },
+
+                ],
+                integrate: [
+                    { required: true, message: '请输入活动名称', trigger: 'blur' },
+
+                ],
+                sfz: [
+                    { required: true, message: '请输入活动名称', trigger: 'blur' },
+
+                ],
+                birthday: [
+                    { required: true, message: '请输入活动名称', trigger: 'blur' },
+
+                ],
+                comment: [
+                    { required: true, message: '请输入活动名称', trigger: 'blur' },
+
+                ]
+
+            }
+        },
+        mounted:function () {
+            this.initData(this.currentpage,this.pagesize);
+        },
+        /**
+         * 加载数据
+         */
+        methods:{
+            initData:function (currentpage,pagesize) {
+                axios.get('/members/query',{
+                    params:{
+                        currentpage:currentpage,
+                        pagesize:pagesize,
+                        search:this.search
+                    }
+                }).then((result)=>{
+                    console.log(result)
+                    this.tableData=result.data.list;
+                    this.total=result.data.total;
+                    this.currentpage=result.data.pageNum;
+                })
+            },
+            handleSizeChange(val) {
+                this.initData(1,val);
+                this.pagesize=val;
+                console.log(val);
+            },
+            handleCurrentChange(val) {
+                this.initData(val,this.pagesize);
+                this.currentpage=val;
+                console.log(val);
+                console.log(this.pagesize);
+            },
+            showDialog:function () {
+                this.dialogVisible=true;
+            },
+            onSearch:function () {
+                this.initData(1,this.pagesize);
+            },
+            deletemembers:function (rowData) {
+                axios.get('/members/delete',{
+                    params:{
+                        vid:rowData.vid
+                    }
+                }).then((result)=>{
+                    this.initData(1,this.pagesize);
+                    alert("删除成功");
+                })
+            },
+            resetForm:function(formName) {
+                this.$refs[formName].resetFields();
+            },
+            addGoods:function (formName) {
+                this.$refs[formName].validate((valid) => {
+                    if (valid) {
+                        console.log(this.membersForm);
+                        axios.post('/members/add',this.membersForm).then((result)=>{
+                            this.dialogVisible=false;
+                            this.initData(1,this.pagesize);
+                        })
+                    } else {
+                        console.log('error submit!!');
+                        return false;
+                    }
+                });
+            }
+
+
+        }
+    })
+</script>
+</html>

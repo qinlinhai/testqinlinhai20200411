@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>首页</title>
+    <script src="js/vue.js"></script>
+</head>
+<body>
+<a href="/membersList">查询会员列表</a>
+<div id="div">
+{{message}}<input type="text" v-model="message">
+</div>
+<input type="button" @click="btn" value="aaa">
+</body>
+<script>
+    const vm=new Vue({
+        el:"#div",
+        data:{
+            message:"123"
+        },
+        methods:{
+            btn:function () {
+                alert(123);
+                 axios.post('/members/ceshi',{
+                     a:this.message
+                 }).then((result)=>{
+                     alert(123);
+                 })
+            }
+        }
+    })
+</script>
+</html>

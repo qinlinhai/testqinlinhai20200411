@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aaa.mapper.MembersMapper">
+    <select id="mlist" resultMap="mMap">
+        select m.*,v.vname from members m join vtype v on m.vtypeid=v.vtypeid where m.deleted=0
+        <if test="searchname!=null">
+            and m.fullname like concat('%',#{searchname},'%')
+        </if>
+         ORDER BY m.vid desc
+    </select>
+    <resultMap id="mMap" type="com.aaa.entity.Members">
+        <id column="vid" property="vid"></id>
+        <result column="vtypeid" property="vtypeid"></result>
+        <result column="fullname" property="fullname"></result>
+        <result column="code" property="code"></result>
+        <result column="phone" property="phone"></result>
+        <result column="integrate" property="integrate"></result>
+        <result column="sfz" property="sfz"></result>
+        <result column="createtime" property="createtime"></result>
+        <result column="birthday" property="birthday"></result>
+        <result column="sex" property="sex"></result>
+        <result column="deteled" property="deteled"></result>
+        <result column="comment" property="comment"></result>
+        <collection property="vtype" javaType="com.aaa.entity.Vtype">
+            <id column="vtypeid" property="vtypeid"></id>
+            <result column="vanme" property="vanme"></result>
+            <result column="deleted" property="deleted"></result>
+        </collection>
+
+    </resultMap>
+</mapper>
